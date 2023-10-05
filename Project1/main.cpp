@@ -51,7 +51,7 @@ void testHiddenPairs(std::vector<std::vector<char>> board);
 
 
 int main() {
-	std::vector<std::vector<char>> board= { {'5', '3', '.', '.', '7', '.', '.', '.', '.'}, 
+	std::vector<std::vector<char>> board2= { {'5', '3', '.', '.', '7', '.', '.', '.', '.'}, 
 											 {'6', '.', '.', '1', '9', '5', '.', '.', '.'}, 
 											 {'.', '9', '8', '.', '.', '.', '.', '6', '.'},	
 											 {'8', '.', '.', '.', '6', '.', '.', '.', '3'}, 
@@ -61,7 +61,7 @@ int main() {
 											 {'.', '.', '.', '.', '1', '9', '.', '.', '5'}, 
 											 {'.', '.', '.', '.', '8', '.', '.', '7', '9'} };
 
-	std::vector<std::vector<char>> board2 = { {'.','.','9','7','4','8','.','.','.'},
+	std::vector<std::vector<char>> board = { {'.','.','9','7','4','8','.','.','.'},
 											 {'7','.','.','.','.','.','.','.','.'},
 											 {'.','2','.','1','.','9','.','.','.'},
 											 {'.','.','7','.','.','.','2','4','.'},
@@ -206,8 +206,8 @@ void excludeSingleNumber(char num, int currentRow, int currentColumn, std::vecto
 }
 
 void performExclusionByBitmask(short bitmask, int currentRow, int currentColumn, std::vector<std::vector<short>>& bitsetBoard,
-	void (*excluder)(char, int, int, std::vector<std::vector<short>>&, std::vector<std::pair<short, short>> const&),
-	std::vector<std::pair<short, short>>& exceptions) {
+							   void (*excluder)(char, int, int, std::vector<std::vector<short>>&, std::vector<std::pair<short, short>> const&),
+	                           std::vector<std::pair<short, short>>& exceptions) {
 	for (int i = 0; i < 9; i++) {
 		if (bitmask & (1 << i)) {
 			excluder(static_cast<char>(i + 48 + 1), currentRow, currentColumn, bitsetBoard, exceptions);
@@ -497,42 +497,6 @@ void printBoard(std::vector<std::vector<char>>& board) {
 bool solveSoduku(std::vector<std::vector<char>>& board, std::vector<std::vector<short>>& bitsetBoard, int emptyFields) {
 	bool isStucked = true;
 	while (1) {
-		//Resolving singles:
-		for (int i = 0; i < 9; ++i) {
-			for (int j = 0; j < 9; ++j) {
-				if (countActiveBits(bitsetBoard[i][j]) == 1) {
-					board[i][j] = static_cast<char>(convertBitmaskToShorts(bitsetBoard[i][j])[0] + 48);
-					bitsetBoard[i][j] = 0;
-					excludeSingleNumber(board[i][j], i, j, bitsetBoard, std::vector<std::pair<short, short>>(1, std::pair<short, short>(i, j)));
-					emptyFields--;
-					isStucked = false;
-				}
-			}
-		}
-
-
-		std::cout << "The boards after resolving singles." << "\n";
-		printBoard(bitsetBoard);
-		printBoard(board);
-
-		//Find hidden singles:
-		for (int i = 0; i < 9; ++i) {
-			for (int j = 0; j < 9; ++j) {
-				if (findHiddenSingle(i, j, bitsetBoard)) {
-					board[i][j] = static_cast<char>(convertBitmaskToShorts(bitsetBoard[i][j])[0] + 48);
-					bitsetBoard[i][j] = 0;
-					excludeSingleNumber(board[i][j], i, j, bitsetBoard, std::vector<std::pair<short, short>>(1, std::pair<short, short>(i, j)));
-					emptyFields--;
-					isStucked = false;
-				}
-			}
-		}
-		//PROBA COMMENT
-
-		std::cout << "The boards after finding hidden singles." << "\n";
-		printBoard(bitsetBoard);
-		printBoard(board);
-
 		//Separate uniforms:
 		for (int i = 0; i < 9; ++i) {
 			for (int j = 0; j < 9; ++j) {
@@ -565,10 +529,44 @@ bool solveSoduku(std::vector<std::vector<char>>& board, std::vector<std::vector<
 		std::cout << "The boards after hidden pairs." << "\n";
 		printBoard(bitsetBoard);
 		printBoard(board);
+
+		//Resolving singles:
+		for (int i = 0; i < 9; ++i) {
+			for (int j = 0; j < 9; ++j) {
+				if (countActiveBits(bitsetBoard[i][j]) == 1) {
+					board[i][j] = static_cast<char>(convertBitmaskToShorts(bitsetBoard[i][j])[0] + 48);
+					bitsetBoard[i][j] = 0;
+					excludeSingleNumber(board[i][j], i, j, bitsetBoard, std::vector<std::pair<short, short>>(1, std::pair<short, short>(i, j)));
+					emptyFields--;
+					isStucked = false;
+				}
+			}
+		}
+
+
+		std::cout << "The boards after resolving singles." << "\n";
+		printBoard(bitsetBoard);
+		printBoard(board);
+
+		//Find hidden singles:
+		for (int i = 0; i < 9; ++i) {
+			for (int j = 0; j < 9; ++j) {
+				if (findHiddenSingle(i, j, bitsetBoard)) {
+					board[i][j] = static_cast<char>(convertBitmaskToShorts(bitsetBoard[i][j])[0] + 48);
+					bitsetBoard[i][j] = 0;
+					excludeSingleNumber(board[i][j], i, j, bitsetBoard, std::vector<std::pair<short, short>>(1, std::pair<short, short>(i, j)));
+					emptyFields--;
+					isStucked = false;
+				}
+			}
+		}
+
+		std::cout << "The boards after finding hidden singles." << "\n";
+		printBoard(bitsetBoard);
+		printBoard(board);
 		std::cout << "EMPTY FIELDS AFTER CURRENT ITERATION: " << emptyFields << std::endl;
 
 		if (isStucked) {
-			//return false;
 			std::vector<short> probeCellValues;
 			std::vector<std::vector<char>> boardSnapShot = board;
 			std::vector<std::vector<short>> bitsetBoardSnapShot = bitsetBoard;
